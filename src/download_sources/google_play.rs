@@ -3,7 +3,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use futures_util::StreamExt;
-use gpapi::error::ErrorKind as GpapiErrorKind;
+use gpapi::error::{Error as GpapiError, ErrorKind as GpapiErrorKind};
 use gpapi::Gpapi;
 use indicatif::MultiProgress;
 use tokio::time::{sleep, Duration as TokioDuration};
@@ -36,7 +36,7 @@ pub async fn download_apps(
     };
     let mut gpa = match options.remove("device_properties_file") {
         None => Gpapi::new(device, email),
-        Some(file) => Gpapi::from_device_properties_file(device, email, file)
+        Some(file) => Gpapi::from_device_properties_file(device, email, file),
     };
     if let Some(locale) = options.remove("locale") {
         gpa.set_locale(locale);
@@ -61,17 +61,17 @@ pub async fn download_apps(
                     match gpa.accept_tos().await {
                         Ok(_) => {
                             println!("Google Play Terms of Service accepted.");
-                        },
+                        }
                         Err(e) => {
                             eprintln!("Could not accept Google Play Terms of Service: {}", e);
                             std::process::exit(1);
-                        },
+                        }
                     }
                 } else {
                     println!("{}\nPlease read the ToS here: https://play.google.com/about/play-terms/index.html\nIf you accept, please pass the --accept-tos flag.", err);
                     std::process::exit(1);
                 }
-            },
+            }
             _ => {
                 eprintln!("Could not log in to Google Play.  Please check your credentials and try again later. {}", err);
                 std::process::exit(1);
@@ -138,22 +138,16 @@ pub async fn request_aas_token(
     email: &str,
     oauth_token: &str,
     mut options: HashMap<&str, &str>,
-) {
+) -> Result<String, GpapiError> {
     let device = options.remove("device").unwrap_or("px_9a");
     let mut api = match options.remove("device_properties_file") {
         None => Gpapi::new(device, email),
-        Some(file) => Gpapi::from_device_properties_file(device, email, file)
+        Some(file) => Gpapi::from_device_properties_file(device, email, file),
     };
-    match api.request_aas_token(oauth_token).await {
-        Ok(()) => {
-            let aas_token = api.get_aas_token().unwrap();
-            eprintln!("AAS Token:");
-            println!("{}", aas_token);
-        },
-        Err(_) => {
-            println!("Error: was not able to retrieve AAS token with the provided OAuth token. Please provide new OAuth token and try again.");
-        }
-    }
+    api.request_aas_token(oauth_token).await?;
+    api.get_aas_token()
+        .map(|token| token.to_string())
+        .ok_or_else(|| GpapiError::new(GpapiErrorKind::Authentication))
 }
 
 pub fn list_versions(apps: Vec<(String, Option<String>)>) {

@@ -1,4 +1,4 @@
-use clap::{value_parser, Command, Arg, ArgAction, ValueEnum, {builder::EnumValueParser}};
+use clap::{builder::EnumValueParser, value_parser, Arg, ArgAction, Command, ValueEnum};
 
 #[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
 pub enum DownloadSource {
@@ -42,7 +42,7 @@ pub fn app() -> Command {
                 .long("app")
                 .action(ArgAction::Set)
                 .conflicts_with("csv")
-                .required_unless_present_any(["csv", "google_oauth_token"]),
+                .required_unless_present_any(["csv", "google_oauth_token", "browser_login", "cookies"]),
         )
         .arg(
             Arg::new("csv")
@@ -110,6 +110,37 @@ pub fn app() -> Command {
                 .action(ArgAction::Set)
         )
         .arg(
+            Arg::new("browser_login")
+                .help("Obtain an OAuth token by opening a browser and logging in to Google (optionally specify chrome, edge, or chromium)")
+                .long("browser-login")
+                .action(ArgAction::Set)
+                .num_args(0..=1)
+                .default_missing_value("chrome")
+                .value_parser(["chrome", "edge", "chromium"])
+                .conflicts_with_all(["google_oauth_token", "cookies"])
+        )
+        .arg(
+            Arg::new("cookies")
+                .help("Path to a Netscape cookies.txt file containing the accounts.google.com oauth_token cookie")
+                .long("cookies")
+                .action(ArgAction::Set)
+                .conflicts_with_all(["google_oauth_token", "browser_login"])
+        )
+        .arg(
+            Arg::new("save_token")
+                .help("Save the obtained AAS token and email to the apkeep config file")
+                .long("save-token")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("login_timeout")
+                .help("Seconds to wait for the browser login to complete")
+                .long("login-timeout")
+                .action(ArgAction::Set)
+                .value_parser(value_parser!(u64))
+                .default_value("300")
+        )
+        .arg(
             Arg::new("google_email")
                 .help("Google account email address (required if download source is Google Play)")
                 .short('e')
@@ -161,6 +192,6 @@ pub fn app() -> Command {
                 .help("Path to store output files")
                 .action(ArgAction::Set)
                 .index(1)
-                .required_unless_present_any(["list_versions", "google_oauth_token"]),
+                .required_unless_present_any(["list_versions", "google_oauth_token", "browser_login", "cookies"]),
         )
 }

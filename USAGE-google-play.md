@@ -1,8 +1,59 @@
-To download directly from the Google Play Store, you have two authentication options:
+To download directly from the Google Play Store, you have a few authentication options:
 
-## Option 1: Using OAuth Token (recommended for personal accounts)
+## Option 1: Browser login (recommended for personal accounts)
 
-First, obtain an OAuth token by visiting the Google [embedded setup page](https://accounts.google.com/EmbeddedSetup) and:
+Run apkeep with `--browser-login`; it opens a browser window at the Google
+[embedded setup page](https://accounts.google.com/EmbeddedSetup). Log in to the
+Google account you want to use (and accept the Terms of Service if prompted).
+apkeep reads the one-time `oauth_token` cookie from that browser session and
+exchanges it for a long-lived AAS token, which it prints:
+
+```shell
+apkeep --browser-login -e 'someone@gmail.com'
+```
+
+By default apkeep tries to find Chrome. You can also select `edge` or `chromium`:
+
+```shell
+apkeep --browser-login=edge -e 'someone@gmail.com'
+```
+
+Use `--login-timeout` to change how long apkeep waits for the login (default:
+300 seconds). Add `--save-token` to write the email and AAS token to the
+`apkeep.ini` config file so you do not have to log in again:
+
+```shell
+apkeep --browser-login -e 'someone@gmail.com' --save-token
+```
+
+Note that the saved token is stored as plain text, so protect the config file
+accordingly. The browser uses a temporary profile which is deleted afterwards;
+your normal browser session is not touched. This option requires a desktop
+session — on a headless machine, use option 2 or 3 below.
+
+An AAS token can then be used to download an app:
+
+```shell
+apkeep -a com.instagram.android -e 'someone@gmail.com' -t some_aas_token .
+```
+
+## Option 2: Import cookies from a cookies.txt file
+
+If you prefer to collect cookies yourself (for example with a browser
+extension), export them in Netscape `cookies.txt` format after logging in at
+the [embedded setup page](https://accounts.google.com/EmbeddedSetup). apkeep
+finds the `oauth_token` cookie in that file and exchanges it for an AAS token:
+
+```shell
+apkeep --cookies /path/to/cookies.txt -e 'someone@gmail.com'
+```
+
+`--save-token` works here too. This path does not require a browser window.
+
+## Option 3: Manual OAuth token copy
+
+You can also obtain an OAuth token manually by visiting the Google
+[embedded setup page](https://accounts.google.com/EmbeddedSetup) and:
 
 - Open the browser debugging console to the `Network` tab
 - Log in
@@ -18,13 +69,7 @@ It can only be used once, in order to obtain the AAS token which can be used sub
 apkeep -e 'someone@gmail.com' --oauth-token oauth2_4/...
 ```
 
-An AAS token should be printed. You can use this to download an app:
-
-```shell
-apkeep -a com.instagram.android -e 'someone@gmail.com' -t some_aas_token .
-```
-
-## Option 2: Using AUTH Token (for token dispensers)
+## Option 4: Using AUTH Token (for token dispensers)
 
 If you have an AUTH token from a token dispenser (e.g., Aurora Store's dispenser), you can use it directly with the `--auth-token` flag:
 

@@ -24,6 +24,14 @@ Options:
           The path to an ini file which contains configuration data
       --oauth-token <google_oauth_token>
           Google oauth token, required to retrieve long-lived aas token
+      --browser-login [<browser_login>]
+          Obtain an OAuth token by opening a browser and logging in to Google (optionally specify chrome, edge, or chromium) [possible values: chrome, edge, chromium]
+      --cookies <cookies>
+          Path to a Netscape cookies.txt file containing the accounts.google.com oauth_token cookie
+      --save-token
+          Save the obtained AAS token and email to the apkeep config file
+      --login-timeout <login_timeout>
+          Seconds to wait for the browser login to complete [default: 300]
   -e, --email <google_email>
           Google account email address (required if download source is Google Play)
   -t, --aas-token <google_aas_token>

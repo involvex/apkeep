@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+- Google Play: add `--browser-login` to obtain an OAuth token by logging in through a browser window
+- Google Play: add `--cookies` to read the OAuth token from a Netscape `cookies.txt` file
+- Google Play: add `--save-token` to persist the obtained AAS token to the apkeep config file
+
 ## [1.1.0] - 2026-10-01
 - Add warnings and explicit flag requirement to download from APKPure
 - Make Googe Play the default download source
